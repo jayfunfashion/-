@@ -9,4 +9,20 @@ export interface VideoItem {
   addedAt: number;
 }
 
-export type AppTab = 'home' | 'library' | 'me';
+export interface WatchRecord {
+  videoId: string;
+  lastPlayedAt: number;
+  progress: number; // in seconds
+  duration: number; // total duration in seconds
+}
+
+export interface FileNode {
+  id: string;
+  name: string;
+  type: 'folder' | 'video';
+  videoData?: VideoItem;
+  children: FileNode[];
+  parentId: string | null;
+}
+
+export type AppTab = 'home' | 'library' | 'playlist' | 'me';
