@@ -8,18 +8,18 @@ import { Sparkles, Play, Clock } from 'lucide-react';
 interface HomeProps {
   videos: VideoItem[];
   history: WatchRecord[];
+  favorites: VideoItem[];
+  onToggleFavorite: (video: VideoItem) => void;
 }
 
-const Home: React.FC<HomeProps> = ({ videos, history }) => {
+const Home: React.FC<HomeProps> = ({ videos, history, favorites, onToggleFavorite }) => {
   const navigate = useNavigate();
 
-  // Find the most recent record for "Continue Watching"
   const continueVideoRecord = history.length > 0 ? history[0] : null;
   const continueVideo = continueVideoRecord 
     ? videos.find(v => v.id === continueVideoRecord.videoId) 
     : null;
 
-  // Recent Viewing (sorted by time - history is already prepended with new records)
   const recentVideos = history
     .map(h => ({
       video: videos.find(v => v.id === h.videoId),
@@ -41,7 +41,6 @@ const Home: React.FC<HomeProps> = ({ videos, history }) => {
         </div>
       </div>
 
-      {/* 最近观看 Section - Column based sorted by time */}
       <h2 className="text-xl font-black text-gray-800 mb-4 px-1 flex items-center gap-2">
         最近观看
       </h2>
@@ -52,12 +51,16 @@ const Home: React.FC<HomeProps> = ({ videos, history }) => {
           </div>
         ) : (
           recentVideos.map(({ video }) => (
-            <VideoCard key={video.id} video={video} />
+            <VideoCard 
+              key={video.id} 
+              video={video} 
+              isFavorite={favorites.some(f => f.id === video.id)}
+              onToggleFavorite={onToggleFavorite}
+            />
           ))
         )}
       </div>
 
-      {/* 继续观看 Section (Featured prominently) */}
       {continueVideo && (
         <div className="mb-8">
           <h2 className="text-xl font-black text-gray-800 mb-4 px-1 flex items-center gap-2">

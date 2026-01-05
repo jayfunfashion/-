@@ -11,7 +11,8 @@ import {
   Play,
   Trash2,
   PlusCircle,
-  PlayCircle
+  PlayCircle,
+  Heart
 } from 'lucide-react';
 import { FileNode, VideoItem } from '../types';
 
@@ -23,6 +24,8 @@ interface LibraryProps {
   setCurrentFolderId: (id: string) => void;
   onAddToPlaylist: (video: VideoItem) => void;
   onAddFolderToPlaylist: (node: FileNode) => void;
+  favorites: VideoItem[];
+  onToggleFavorite: (video: VideoItem) => void;
 }
 
 const Library: React.FC<LibraryProps> = ({ 
@@ -32,7 +35,9 @@ const Library: React.FC<LibraryProps> = ({
   currentFolderId, 
   setCurrentFolderId,
   onAddToPlaylist,
-  onAddFolderToPlaylist
+  onAddFolderToPlaylist,
+  favorites,
+  onToggleFavorite
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -127,48 +132,60 @@ const Library: React.FC<LibraryProps> = ({
           </div>
         ) : (
           <div className="flex overflow-x-auto pb-8 gap-5 px-2 scrollbar-hide snap-x">
-            {filteredChildren.map((child) => (
-              <div key={child.id} className="snap-center shrink-0 w-40 group relative">
-                <div 
-                  onClick={() => child.type === 'folder' ? setCurrentFolderId(child.id) : navigate(`/player/${child.id}`)}
-                  className={`aspect-square rounded-[40px] mb-4 relative overflow-hidden transition-all duration-300 active:scale-90 shadow-lg border-4 border-white ${
-                    child.type === 'folder' ? 'bg-[#FFF9E6]' : 'bg-gray-100'
-                  }`}
-                >
-                  <div className="w-full h-full flex items-center justify-center">
-                    {child.type === 'folder' ? (
-                      <Folder size={64} fill="#FFD600" className="text-[#FFB300]" />
-                    ) : (
-                      <div className="w-full h-full zebra-gradient flex items-center justify-center text-white">
-                         <Play size={32} fill="currentColor" />
-                      </div>
-                    )}
+            {filteredChildren.map((child) => {
+              const isFav = child.type === 'video' && child.videoData && favorites.some(f => f.id === child.videoData!.id);
+              
+              return (
+                <div key={child.id} className="snap-center shrink-0 w-40 group relative">
+                  <div 
+                    onClick={() => child.type === 'folder' ? setCurrentFolderId(child.id) : navigate(`/player/${child.id}`)}
+                    className={`aspect-square rounded-[40px] mb-4 relative overflow-hidden transition-all duration-300 active:scale-90 shadow-lg border-4 border-white ${
+                      child.type === 'folder' ? 'bg-[#FFF9E6]' : 'bg-gray-100'
+                    }`}
+                  >
+                    <div className="w-full h-full flex items-center justify-center">
+                      {child.type === 'folder' ? (
+                        <Folder size={64} fill="#FFD600" className="text-[#FFB300]" />
+                      ) : (
+                        <div className="w-full h-full zebra-gradient flex items-center justify-center text-white">
+                           <Play size={32} fill="currentColor" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Overlay controls for removal, playlist, and favorite */}
+                  <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                     <button 
+                      onClick={(e) => { e.stopPropagation(); onRemoveNode(child.id); }}
+                      className="p-2 bg-red-500 text-white rounded-full shadow-md"
+                     >
+                        <Trash2 size={12} />
+                     </button>
+                     {child.type === 'video' && child.videoData && (
+                       <>
+                         <button 
+                          onClick={(e) => { e.stopPropagation(); onToggleFavorite(child.videoData!); }}
+                          className={`p-2 rounded-full shadow-md ${isFav ? 'bg-red-400 text-white' : 'bg-white text-gray-400'}`}
+                         >
+                            <Heart size={12} fill={isFav ? 'currentColor' : 'none'} />
+                         </button>
+                         <button 
+                          onClick={(e) => { e.stopPropagation(); onAddToPlaylist(child.videoData!); }}
+                          className="p-2 bg-blue-500 text-white rounded-full shadow-md"
+                         >
+                            <PlusCircle size={12} />
+                         </button>
+                       </>
+                     )}
+                  </div>
+
+                  <div className="text-center">
+                    <p className="text-gray-800 font-black text-sm truncate leading-tight px-2">{child.name}</p>
                   </div>
                 </div>
-
-                {/* Overlay controls for removal and playlist */}
-                <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                   <button 
-                    onClick={(e) => { e.stopPropagation(); onRemoveNode(child.id); }}
-                    className="p-2 bg-red-500 text-white rounded-full shadow-md"
-                   >
-                      <Trash2 size={12} />
-                   </button>
-                   {child.type === 'video' && child.videoData && (
-                     <button 
-                      onClick={(e) => { e.stopPropagation(); onAddToPlaylist(child.videoData!); }}
-                      className="p-2 bg-blue-500 text-white rounded-full shadow-md"
-                     >
-                        <PlusCircle size={12} />
-                     </button>
-                   )}
-                </div>
-
-                <div className="text-center">
-                  <p className="text-gray-800 font-black text-sm truncate leading-tight px-2">{child.name}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

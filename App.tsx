@@ -6,6 +6,7 @@ import Library from './pages/Library';
 import Player from './pages/Player';
 import Profile from './pages/Profile';
 import Playlist from './pages/Playlist';
+import Favorites from './pages/Favorites';
 import BottomNav from './components/BottomNav';
 import { VideoItem, FileNode, WatchRecord } from './types';
 
@@ -21,6 +22,7 @@ const AppContent: React.FC = () => {
   const [currentFolderId, setCurrentFolderId] = useState<string>('root');
   const [watchHistory, setWatchHistory] = useState<WatchRecord[]>([]);
   const [playlist, setPlaylist] = useState<VideoItem[]>([]);
+  const [favorites, setFavorites] = useState<VideoItem[]>([]);
   const [lastPlayedVideoId, setLastPlayedVideoId] = useState<string | null>(null);
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -88,6 +90,7 @@ const AppContent: React.FC = () => {
     setRootNode(deleteFromNode(rootNode));
     setWatchHistory(prev => prev.filter(h => h.videoId !== id));
     setPlaylist(prev => prev.filter(v => v.id !== id));
+    setFavorites(prev => prev.filter(v => v.id !== id));
   };
 
   const updateProgress = (videoId: string, progress: number, duration: number) => {
@@ -122,6 +125,15 @@ const AppContent: React.FC = () => {
     setPlaylist(prev => prev.filter(v => v.id !== id));
   };
 
+  const toggleFavorite = (video: VideoItem) => {
+    setFavorites(prev => {
+      if (prev.find(v => v.id === video.id)) {
+        return prev.filter(v => v.id !== video.id);
+      }
+      return [...prev, video];
+    });
+  };
+
   const location = useLocation();
   const isPlayerOpen = location.pathname.startsWith('/player');
 
@@ -144,6 +156,8 @@ const AppContent: React.FC = () => {
             <Home 
               videos={allVideos} 
               history={watchHistory} 
+              favorites={favorites}
+              onToggleFavorite={toggleFavorite}
             />
           } />
           <Route path="/library" element={
@@ -155,6 +169,8 @@ const AppContent: React.FC = () => {
               setCurrentFolderId={setCurrentFolderId}
               onAddToPlaylist={addToPlaylist}
               onAddFolderToPlaylist={addFolderToPlaylist}
+              favorites={favorites}
+              onToggleFavorite={toggleFavorite}
             />
           } />
           <Route path="/playlist" element={
@@ -165,12 +181,20 @@ const AppContent: React.FC = () => {
               onRemoveFromPlaylist={removeFromPlaylist}
             />
           } />
+          <Route path="/favorites" element={
+            <Favorites 
+              favorites={favorites}
+              onToggleFavorite={toggleFavorite}
+            />
+          } />
           <Route path="/profile" element={<Profile />} />
           <Route path="/player/:id" element={
             <Player 
               videos={allVideos} 
               history={watchHistory}
               onUpdateProgress={updateProgress} 
+              favorites={favorites}
+              onToggleFavorite={toggleFavorite}
             />
           } />
         </Routes>

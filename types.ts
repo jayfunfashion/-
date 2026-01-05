@@ -25,4 +25,4 @@ export interface FileNode {
   parentId: string | null;
 }
 
-export type AppTab = 'home' | 'library' | 'playlist' | 'me';
+export type AppTab = 'home' | 'library' | 'playlist' | 'favorites' | 'me';
