@@ -1,0 +1,7 @@
+{
+  "name": "手机本地视频播放器",
+  "description": "A kid-friendly video player with a vibrant Zebra AI-inspired interface for playing local video files.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
