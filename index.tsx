@@ -13,5 +13,6 @@ root.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
+  <script type="module" src="/index.tsx">
 );
-<script type="module" src="/index.tsx">
+
